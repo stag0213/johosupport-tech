@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="light dark" name="color-scheme"/>
+<title>情報Ⅰサポートツール 技術編</title>
+<style>
+:root {
+  --bg: #edf4fb;
+  --surface: rgba(255, 255, 255, .78);
+  --surface-strong: rgba(255, 255, 255, .92);
+  --surface-solid: #ffffff;
+  --ink: #14283d;
+  --muted: #607387;
+  --line: rgba(37, 110, 244, .16);
+  --accent: #256ef4;
+  --accent-strong: #0f3f8c;
+  --accent-soft: rgba(37,110,244,.10);
+  --shadow: 0 24px 70px rgba(15, 39, 64, .12);
+  --shadow-card: 0 20px 52px rgba(15, 39, 64, .10);
+  --radius: 28px;
+  --max: 1220px;
+}
+body:has(#themeModeToggle:checked) {
+  --bg: #0a1018;
+  --surface: rgba(15, 23, 35, .78);
+  --surface-strong: rgba(18, 27, 40, .92);
+  --surface-solid: #0f1723;
+  --ink: #edf3fb;
+  --muted: #9cacbf;
+  --line: rgba(188, 159, 104, .18);
+  --accent: #c6a76a;
+  --accent-strong: #f0d7a6;
+  --accent-soft: rgba(198,167,106,.12);
+  --shadow: 0 24px 70px rgba(0, 0, 0, .42);
+  --shadow-card: 0 20px 52px rgba(0, 0, 0, .38);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  color: var(--ink);
+  line-height: 1.7;
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 26%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-strong) 10%, transparent), transparent 28%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 78%, white 22%) 0%, var(--bg) 50%, color-mix(in srgb, var(--bg) 88%, black 12%) 100%);
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+.wrap { width: min(calc(100% - 32px), var(--max)); margin: 0 auto; }
+header {
+  position: sticky; top: 0; z-index: 20;
+  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.nav { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 0; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.03em; }
+.brand-mark {
+  width:42px; height:42px; border-radius:15px; display:grid; place-items:center;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-strong) 76%, white 24%)); color: color-mix(in srgb, var(--bg) 88%, black 12%); font-weight:900;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+.nav-links { display:flex; gap:12px; flex-wrap:wrap; }
+.nav-links a {
+  padding:8px 14px; border:1px solid color-mix(in srgb, var(--accent) 14%, transparent); border-radius:999px;
+  background: color-mix(in srgb, var(--surface-solid) 72%, transparent); color: var(--muted); font-size:.95rem;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
+}
+.theme-toggle {
+  position: relative; appearance: none; border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 84%, transparent), color-mix(in srgb, var(--surface) 100%, transparent)); color: var(--ink);
+  min-height: 50px; padding: 7px 12px 7px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+  font: inherit; font-size: .94rem; font-weight: 700; box-shadow: inset 0 1px 0 color-mix(in srgb, white 20%, transparent), 0 10px 24px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.theme-toggle-input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  z-index: 4;
+}
+.theme-toggle-shell {
+  position: relative;
+  width: 116px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--surface-solid) 72%, transparent), color-mix(in srgb, var(--accent) 10%, transparent));
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
+}
+.theme-toggle-state {
+  position: relative;
+  z-index: 1;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  transition: opacity .25s ease, color .3s ease, transform .3s ease;
+}
+.theme-toggle-state-light {
+  color: color-mix(in srgb, var(--accent) 84%, white 16%);
+}
+.theme-toggle-state-dark {
+  color: color-mix(in srgb, var(--accent-strong) 84%, white 16%);
+}
+.theme-toggle-track {
+  position: absolute;
+  inset: 3px;
+  width: calc(50% - 3px);
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 62%, white 18%), color-mix(in srgb, var(--accent-strong) 74%, white 10%));
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 24%, transparent), inset 0 1px 0 rgba(255,255,255,.28);
+  transition: transform .34s cubic-bezier(.22,.9,.28,1.02), background .35s ease, box-shadow .35s ease;
+}
+.theme-toggle-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-toggle-thumb-core {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.08);
+}
+.theme-toggle-thumb-glow {
+  position: absolute;
+  inset: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,.18), rgba(255,255,255,0));
+  opacity: .72;
+}
+.theme-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 1rem;
+  line-height: 1;
+  transition: opacity .25s ease, transform .3s ease, color .35s ease, filter .35s ease;
+}
+.theme-toggle-icon-sun {
+  color: color-mix(in srgb, var(--accent) 86%, white 14%);
+}
+.theme-toggle-icon-moon {
+  color: color-mix(in srgb, var(--accent-strong) 84%, white 16%);
+}
+.theme-toggle-label { white-space: nowrap; transition: opacity .22s ease, transform .22s ease; }
+.theme-toggle-input:checked ~ .theme-toggle-shell .theme-toggle-track { transform: translateX(54px); }
+.theme-toggle-input:checked ~ .theme-toggle-shell .theme-toggle-state-light {
+  opacity: .42;
+  transform: translateX(-3px);
+}
+.theme-toggle-input:checked ~ .theme-toggle-shell .theme-toggle-state-dark {
+  opacity: 1;
+  color: color-mix(in srgb, #ffffff 88%, var(--accent-strong) 12%);
+}
+.theme-toggle-input:not(:checked) ~ .theme-toggle-shell .theme-toggle-state-light {
+  opacity: 1;
+  color: color-mix(in srgb, #ffffff 90%, var(--accent) 10%);
+}
+.theme-toggle-input:not(:checked) ~ .theme-toggle-shell .theme-toggle-state-dark {
+  opacity: .4;
+  transform: translateX(3px);
+}
+.theme-toggle-input:checked ~ .theme-toggle-icon-sun {
+  opacity: .28;
+  transform: translateY(1px) scale(.88) rotate(-10deg);
+  filter: saturate(.8);
+}
+.theme-toggle-input:checked ~ .theme-toggle-icon-moon {
+  opacity: 1;
+  transform: translateY(0) scale(1.08) rotate(0deg);
+}
+.theme-toggle-input:not(:checked) ~ .theme-toggle-icon-sun {
+  opacity: 1;
+  transform: translateY(0) scale(1.08) rotate(0deg);
+}
+.theme-toggle-input:not(:checked) ~ .theme-toggle-icon-moon {
+  opacity: .28;
+  transform: translateY(1px) scale(.88) rotate(12deg);
+  filter: saturate(.8);
+}
+body:has(#themeModeToggle:checked) { --thumb-brightness: .86; --thumb-hover-brightness: .96; }
+body:not(:has(#themeModeToggle:checked)) { --thumb-brightness: .98; --thumb-hover-brightness: 1.04; }
+body,
+header,
+.hero-copy, .hero-side, .panel, .footer-box,
+.nav-links a, .theme-toggle, .theme-toggle-track,
+.topic, .card, .card-frame, .card-index, .card-host, .card-kicker, .card-link,
+.card h3, .card p, .lead, .section-head p, .footer-box p, .chip {
+  transition:
+    background-color .45s ease,
+    color .35s ease,
+    border-color .35s ease,
+    box-shadow .45s ease,
+    opacity .28s ease,
+    transform .28s ease;
+}
+body {
+  transition: background .55s ease, color .35s ease;
+}
+.card-media::before,
+.card-media::after,
+.hero-copy::before,
+.hero-copy::after {
+  transition: opacity .45s ease, background .55s ease;
+}
+.card-media img {
+  transition: transform .45s ease, filter .45s ease, opacity .35s ease;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 48%);
+  transition: opacity .55s ease;
+}
+body.theme-switching::before {
+  opacity: .55;
+}
+body.theme-switching .theme-toggle-label {
+  opacity: .72;
+  transform: translateY(-1px);
+}
+body.theme-switching .theme-toggle-icon-sun {
+  transform: translateY(-1px) scale(1.08) rotate(8deg);
+}
+body.theme-switching .theme-toggle-icon-moon {
+  transform: translateY(1px) scale(1.06) rotate(-8deg);
+}
+body.theme-switching .theme-toggle-shell .theme-toggle-track {
+  filter: saturate(1.08) brightness(1.04);
+}
+body.theme-switching .hero-copy,
+body.theme-switching .hero-side,
+body.theme-switching .card-frame,
+body.theme-switching .panel,
+body.theme-switching .footer-box {
+  transform: translateY(2px);
+}
+body.theme-switching .card-media img {
+  opacity: .96;
+}
+body.theme-switching .theme-toggle-thumb {
+  transition-duration: .32s;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before { display: none; }
+  body.theme-switching .hero-copy,
+  body.theme-switching .hero-side,
+  body.theme-switching .card-frame,
+  body.theme-switching .panel,
+  body.theme-switching .footer-box,
+  body.theme-switching .theme-toggle-label,
+  body.theme-switching .card-media img {
+    transform: none;
+    opacity: 1;
+  }
+}
+.hero { padding: 74px 0 36px; }
+.hero-grid { display:grid; grid-template-columns: 1.12fr .88fr; gap:24px; }
+.hero-copy, .hero-side, .panel, .footer-box {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 78%, transparent) 0%, color-mix(in srgb, var(--surface) 92%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent); border-radius: var(--radius); box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+.hero-copy { padding: 40px; position: relative; overflow: hidden; }
+.hero-copy::before {
+  content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, color-mix(in srgb, var(--accent-strong) 10%, transparent), transparent 36%);
+}
+.hero-copy::after {
+  content: ""; position: absolute; right: -56px; bottom: -76px; width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 16%, transparent), rgba(198,167,106,0));
+}
+.hero-copy > * { position: relative; z-index: 1; }
+.eyebrow {
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+  background: var(--accent-soft); color: var(--accent-strong); font-size:.84rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+}
+h1 { margin: 18px 0 14px; font-size: clamp(2.4rem, 5vw, 4.7rem); line-height: 1.03; letter-spacing: -.045em; }
+.lead { margin:0; font-size: 1.08rem; color: var(--muted); max-width: 54ch; }
+.hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:26px; }
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px; border-radius:14px; font-weight:800;
+}
+.btn-primary { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-strong) 76%, white 24%)); color: color-mix(in srgb, var(--bg) 88%, black 12%); box-shadow: 0 12px 26px color-mix(in srgb, var(--accent) 22%, transparent); }
+.btn-secondary { background: color-mix(in srgb, var(--surface-solid) 72%, transparent); color: var(--accent-strong); border:1px solid color-mix(in srgb, var(--accent) 18%, transparent); }
+.hero-side { padding: 26px; }
+.hero-side h2 { margin:0 0 14px; font-size: 1rem; letter-spacing:.08em; text-transform:uppercase; color: var(--muted); }
+.topic-list { display:grid; gap:12px; }
+.topic {
+  display:flex; justify-content:space-between; gap:12px; align-items:center;
+  padding:14px 16px; border:1px solid color-mix(in srgb, var(--accent) 10%, transparent); border-radius:18px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 62%, transparent), color-mix(in srgb, var(--surface) 86%, transparent));
+}
+.topic span { font-weight:800; }
+.topic small { color: var(--muted); }
+main { padding-bottom: 64px; }
+.section-head { display:flex; justify-content:space-between; gap:16px; align-items:end; margin-bottom:26px; }
+.section-head h2 { margin:0; font-size: clamp(1.8rem, 3vw, 2.8rem); letter-spacing:-.04em; }
+.section-head p { margin:0; max-width:52ch; color: var(--muted); }
+.grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:22px; }
+.card {
+  position: relative;
+  min-height: 420px;
+  border-radius: 30px;
+  padding: 1px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, var(--surface-solid) 45%, transparent) 28%, color-mix(in srgb, var(--accent) 10%, transparent));
+  box-shadow: var(--shadow-card);
+  transition: transform .28s ease, box-shadow .28s ease;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 64px rgba(0, 0, 0, .44);
+}
+.card-frame {
+  height: 100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-radius: 29px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 92%, transparent) 0%, color-mix(in srgb, var(--surface) 98%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.card-media {
+  position: relative;
+  display:block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface-solid)), color-mix(in srgb, var(--bg) 80%, var(--surface-solid) 20%));
+}
+.card-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, white 8%, transparent), rgba(255,255,255,0));
+  z-index: 1;
+}
+.card-media::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 58%;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 0%, transparent) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 100%);
+  z-index: 2;
+}
+.card-media img {
+  width:100%; height:100%; object-fit:cover; object-position: top center;
+  transform: scale(1.01);
+  filter: saturate(.94) contrast(1.02) brightness(var(--thumb-brightness, .92));
+  transition: transform .45s ease, filter .45s ease;
+}
+.card:hover .card-media img { transform: scale(1.06); filter: saturate(1) contrast(1.05) brightness(var(--thumb-hover-brightness, 1)); }
+.card-overlay {
+  position:absolute;
+  inset: 16px 16px 16px 16px;
+  z-index:3;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+}
+.card-index {
+  align-self:flex-start;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background: color-mix(in srgb, var(--surface-solid) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent-strong);
+  font-weight: 900;
+  letter-spacing: .03em;
+  box-shadow: 0 10px 24px rgba(0,0,0,.22);
+  backdrop-filter: blur(10px);
+}
+.card-host {
+  display:inline-flex;
+  align-items:center;
+  max-width: 72%;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-solid) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  color: color-mix(in srgb, var(--accent-strong) 92%, white 8%);
+  font-size: .83rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(12px);
+}
+.card-body {
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding: 22px 22px 22px;
+  flex:1;
+}
+.card-topline {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.card-kicker {
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+.card h3 {
+  margin:0;
+  font-size:1.22rem;
+  line-height:1.32;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.card p {
+  margin:0;
+  color: var(--muted);
+  flex:1;
+  display:-webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-footer {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-top: 4px;
+}
+.card-link {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 14px;
+  border-radius:14px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 8%, transparent));
+  color: var(--accent-strong);
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  font-weight:800;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 16%, transparent);
+}
+.card-link::after {
+  content: "→";
+  font-size: 1rem;
+}
+.about { margin-top: 38px; display:grid; grid-template-columns: 1fr 1fr; gap:18px; }
+.panel { padding: 28px; }
+.panel h3 { margin:0 0 12px; font-size:1.18rem; color: var(--ink); }
+.chips { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+.chip { padding:8px 12px; border-radius:999px; background: var(--accent-soft); color: var(--accent-strong); border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800; font-size:.92rem; }
+footer { padding-bottom: 56px; }
+.footer-box {
+  padding: 24px 28px; display:flex; justify-content:space-between; gap:16px; align-items:center;
+}
+.footer-box p { margin:0; color: var(--muted); }
+.footer-link { color: var(--accent-strong); font-weight:800; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent-strong) 55%, transparent); outline-offset: 3px; }
+@media (max-width: 1024px) {
+  .hero-grid, .grid, .about { grid-template-columns: 1fr 1fr; }
+  .about { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .nav { flex-direction:column; align-items:flex-start; }
+  .hero-grid, .grid { grid-template-columns: 1fr; }
+  .hero-copy, .hero-side, .panel, .footer-box { border-radius: 22px; }
+  .hero-copy { padding: 30px; }
+  .footer-box { flex-direction:column; align-items:flex-start; }
+  .card { min-height: 390px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+
+/* responsive polish 2026-08-25 */
+.wrap { width: min(calc(100% - 24px), var(--max)); }
+.card { min-height: 0; }
+
+@media (max-width: 1180px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-side { order: 2; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .wrap { width: min(calc(100% - 22px), var(--max)); }
+  .nav { align-items: flex-start; }
+  .nav-links { width: 100%; gap: 10px; }
+  .nav-links a { flex: 0 1 auto; }
+  .theme-toggle { margin-left: auto; }
+  .hero { padding: 56px 0 26px; }
+  .hero-copy, .hero-side, .panel, .footer-box { border-radius: 24px; }
+  .hero-copy, .hero-side, .panel { padding: 24px; }
+  .section-head { align-items: flex-start; flex-direction: column; margin-bottom: 20px; }
+  .section-head p { max-width: none; }
+  .grid, .about { grid-template-columns: 1fr; gap: 16px; }
+  .card-body { padding: 18px 18px 20px; }
+  .card-footer { flex-wrap: wrap; }
+}
+
+@media (max-width: 640px) {
+  body { line-height: 1.6; }
+  .wrap { width: min(calc(100% - 18px), var(--max)); }
+  .nav { gap: 12px; padding: 12px 0; }
+  .brand { font-size: .96rem; }
+  .brand-mark { width: 38px; height: 38px; border-radius: 13px; }
+  .nav-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .nav-links a { text-align: center; padding: 10px 12px; }
+  .theme-toggle { width: 100%; justify-content: center; }
+  .theme-toggle-shell { width: 108px; }
+  .hero { padding: 44px 0 22px; }
+  h1 { font-size: clamp(2rem, 10vw, 2.8rem); line-height: 1.08; }
+  .lead { font-size: .98rem; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .btn { width: 100%; }
+  .topic { flex-direction: column; align-items: flex-start; }
+  .section-head h2 { font-size: clamp(1.5rem, 7vw, 2rem); }
+  .card { border-radius: 24px; }
+  .card-frame { border-radius: 23px; }
+  .card-overlay { inset: 12px; }
+  .card-index { min-width: 40px; height: 40px; padding: 0 12px; }
+  .card-host { max-width: 68%; padding: 8px 12px; font-size: .76rem; }
+  .card-body { gap: 12px; padding: 16px 16px 18px; }
+  .card h3 { font-size: 1.08rem; }
+  .card p { -webkit-line-clamp: 4; font-size: .94rem; }
+  .card-footer { flex-direction: column; align-items: stretch; }
+  .card-link { width: 100%; justify-content: center; }
+  .panel { padding: 22px 18px; }
+  .footer-box { padding: 20px 18px; }
+}
+
+@media (max-width: 420px) {
+  .nav-links { grid-template-columns: 1fr; }
+  .hero-copy, .hero-side { padding: 20px; }
+  .card-host { max-width: 62%; }
+}
+
+</style>
+</head>
+<body data-theme="dark">
+<header>
+<div class="wrap nav">
+<a aria-label="先頭へ戻る" class="brand" href="#top">
+<span class="brand-mark">Ⅰ</span>
+<span>情報Ⅰサポートツール　技術編</span>
+</a>
+<nav aria-label="ページ内ナビゲーション" class="nav-links">
+<a href="#tools">教材一覧</a>
+<label aria-label="表示テーマを切り替える" class="theme-toggle" id="themeToggle">
+<input aria-label="表示テーマを切り替える" checked="" class="theme-toggle-input" id="themeModeToggle" type="checkbox"/>
+<span class="theme-toggle-shell">
+<span aria-hidden="true" class="theme-toggle-state theme-toggle-state-light">Light</span>
+<span aria-hidden="true" class="theme-toggle-state theme-toggle-state-dark">Dark</span>
+<span aria-hidden="true" class="theme-toggle-track">
+<span class="theme-toggle-thumb">
+<span class="theme-toggle-thumb-core"></span>
+<span class="theme-toggle-thumb-glow"></span>
+</span>
+</span>
+</span>
+<span aria-hidden="true" class="theme-toggle-icon theme-toggle-icon-sun">☀</span>
+<span aria-hidden="true" class="theme-toggle-icon theme-toggle-icon-moon">☾</span>
+<span class="theme-toggle-label">Theme</span>
+</label>
+</nav>
+</div>
+</header>
+<main id="top">
+<section class="hero">
+<div class="wrap hero-grid">
+<div class="hero-copy">
+<span class="eyebrow">Information I Support</span>
+<h1>情報の流れを、<br/>見て・触って・確かめる。</h1>
+
+<div class="hero-actions">
+<a class="btn btn-primary" href="#tools">教材一覧を見る</a>
+</div>
+</div>
+<aside aria-label="学習テーマ" class="hero-side">
+<h2>学習テーマ</h2>
+<div class="topic-list">
+<div class="topic"><span>コンピュータの構成</span><small>ＣＰＵの働き</small></div>
+<div class="topic"><span>論理と規則</span><small>論理回路</small></div>
+<div class="topic"><span>数値の内部表現</span><small>浮動小数点数</small></div>
+<div class="topic"><span>アルゴリズム</span><small>線形探索・二分探索・ソートの仕組み</small></div>
+<div class="topic"><span>シミュレーション</span><small>シミュレーション・ライフゲーム</small></div>
+
+</div>
+</aside>
+</div>
+</section>
+<section class="wrap" id="tools">
+<div class="section-head">
+<h2>教材一覧</h2>
+
+</div>
+<div class="grid">
+<article class="card">
+<div class="card-frame">
+<a aria-label="ＣＰＵの働き を開く" class="card-media" href="https://stag0213.github.io/joho-cpu/">
+<img alt="ＣＰＵの働き のサムネイル" src="assets/thumb-28.jpg"/>
+<div class="card-overlay">
+<span class="card-index">01</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">CPU</span>
+</div>
+<h3>ＣＰＵの働き</h3>
+<p>「コンピュータの仕組みと動作」および「命令実行サイクル」を視覚的に理解するための学習用Webシミュレーターです。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-kisuhenkan/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="論理回路シミュレーター を開く" class="card-media" href="https://stag0213.github.io/joho-ronrikairo/">
+<img alt="論理回路シミュレーター のサムネイル" src="assets/thumb-12.jpg"/>
+<div class="card-overlay">
+<span class="card-index">02</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Logic Circuit</span>
+</div>
+<h3>論理回路シミュレーター</h3>
+<p>INPUT / AND / OR / NOT / OUTPUT をキャンバス上へ追加し、MIL記号の形で回路を構築できるスタンドアロンWebアプリです。出力。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-ronrikairo/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="半加算回路・全加算回路 を開く" class="card-media" href="https://stag0213.github.io/joho-hankasan/">
+<img alt="半加算回路・全加算回路 のサムネイル" src="assets/thumb-17.jpg"/>
+<div class="card-overlay">
+<span class="card-index">03</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Logic Circuit</span>
+</div>
+<h3>半加算回路・全加算回路</h3>
+<p>AND・OR・NOT の基本3論理ゲートのみで半加算回路および全加算回路を組み立てるロジックをインタラクティブに体験・理解できるよう設計されています。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-hankasan/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+
+<article class="card">
+<div class="card-frame">
+<a aria-label="数値の内部表現 を開く" class="card-media" href="https://stag0213.github.io/joho-fudousyousuu/">
+<img alt="数値の内部表現 のサムネイル" src="assets/thumb-29.jpg"/>
+<div class="card-overlay">
+<span class="card-index">04</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Number</span>
+</div>
+<h3>数値の内部表現</h3>
+<p>「数値の表現（コンピュータにおける数値表現と誤差）」を直感的に学習できるインタラクティブなWebアプリケーションです。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-fudousyousuu/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="探索 を開く" class="card-media" href="https://stag0213.github.io/joho-nibuntansaku-senkeitansaku/">
+<img alt="探索のサムネイル" src="assets/thumb-30.jpg"/>
+<div class="card-overlay">
+<span class="card-index">05</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Search</span>
+</div>
+<h3>二分探索と線形探索</h3>
+<p>線形探索（リニアサーチ）と二分探索（バイナリサーチ）**を同時に比較できます。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-nibuntansaku-senkeitansaku/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="ソート を開く" class="card-media" href="https://stag0213.github.io/joho-sort/">
+<img alt="ソート のサムネイル" src="assets/thumb-31.jpg"/>
+<div class="card-overlay">
+<span class="card-index">06</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Sort</span>
+</div>
+<h3>ソート</h3>
+<p>複数のソートアルゴリズムを視覚的に比較できます。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-sort/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="確定モデル を開く" class="card-media" href="https://stag0213.github.io/joho-fukurikeisan/">
+<img alt="確定モデル のサムネイル" src="assets/thumb-32.jpg"/>
+<div class="card-overlay">
+<span class="card-index">07</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">compound interest</span>
+</div>
+<h3>確定モデル</h3>
+<p>「単利」と「複利」の計算を通じて、現実の現象を数理モデル（一次関数・指数関数）として捉え、コンピュータによるシミュレーションやパラメータ変化の影響を視覚的かつ直感的に体験できます。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-fukurikeisan/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="モンテカルロ法く" class="card-media" href="https://stag0213.github.io/joho-pi-simulationK/">
+<img alt="モンテカルロ法 のサムネイル" src="assets/thumb-20.jpg"/>
+<div class="card-overlay">
+<span class="card-index">08</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Monte Carlo method</span>
+</div>
+<h3>モンテカルロ法</h3>
+<p>モンテカルロ法を用いて円周率を求めます。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-pi-simulationK/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+
+<article class="card">
+<div class="card-frame">
+<a aria-label="待ち行列 を開く" class="card-media" href="https://stag0213.github.io/joho-simulation/">
+<img alt="待ち行列 のサムネイル" src="assets/thumb-33.jpg"/>
+<div class="card-overlay">
+<span class="card-index">09</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Image Media</span>
+</div>
+<h3>待ち行列</h3>
+<p>パラメータを設定し、行列の様子を視覚的に学べる教材です。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-simulation/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="交通渋滞 を開く" class="card-media" href="https://stag0213.github.io/joho-traffic/">
+<img alt="交通渋滞 のサムネイル" src="assets/thumb-34.jpg"/>
+<div class="card-overlay">
+<span class="card-index">10</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Traffic</span>
+</div>
+<h3>交通渋滞</h3>
+<p>ＧＷなどの渋滞をモデル化しました。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-traffic/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="感染症 を開く" class="card-media" href="https://stag0213.github.io/joho-sir/">
+<img alt="感染症 のサムネイル" src="assets/thumb-35.jpg"/>
+<div class="card-overlay">
+<span class="card-index">11</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">SIR Model</span>
+</div>
+<h3>感染症</h3>
+<p>感染症のＳＩＲモデルです。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-sir/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="ドップラー効果 を開く" class="card-media" href="https://stag0213.github.io/joho-doppler/">
+<img alt="ドップラー効果 のサムネイル" src="assets/thumb-36.jpg"/>
+<div class="card-overlay">
+<span class="card-index">12</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Doppler</span>
+</div>
+<h3>ドップラー効果</h3>
+<p>物理で学ぶドップラー効果を体験できます</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-doppler/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="生態系シミュレーション を開く" class="card-media" href="https://stag0213.github.io/joho-seitakiei/">
+<img alt="生態系シミュレーション のサムネイル" src="assets/thumb-37.jpg"/>
+<div class="card-overlay">
+<span class="card-index">13</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Readability</span>
+</div>
+<h3>生態系シミュレーション</h3>
+<p>捕食者数・被捕食者数を変化させ、生態系への影響を確認できます。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-seitakiei/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="確率シミュレーション を開く" class="card-media" href="https://stag0213.github.io/joho-gacha/">
+<img alt="確率モデル のサムネイル" src="assets/thumb-38.jpg"/>
+<div class="card-overlay">
+<span class="card-index">14</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Game</span>
+</div>
+<h3>確率モデル</h3>
+<p>確率と引く回数を指定してシミュレーションを実行できます。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-gacha/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-frame">
+<a aria-label="ライフゲーム を開く" class="card-media" href="https://stag0213.github.io/joho-lifegame/">
+<img alt="ライフゲーム のサムネイル" src="assets/thumb-13.jpg"/>
+<div class="card-overlay">
+<span class="card-index">15</span>
+<span class="card-host">stag0213.github.io</span>
+</div>
+</a>
+<div class="card-body">
+<div class="card-topline">
+<span class="card-kicker">Simulation</span>
+</div>
+<h3>ライフゲーム</h3>
+<p>プリセット: 世代 (ステップ数): 0 ## 💡 ライフゲームの基本ルール * 誕生（生）： 死んでいるセルに隣接する生きたセルがちょうど3つなら、次の世。</p>
+<div class="card-footer">
+<span class="card-kicker">教材リンクあり</span>
+<a class="card-link" href="https://stag0213.github.io/joho-lifegame/">教材を開く</a>
+</div>
+</div>
+</div>
+</article>
+
+</div>
+</section>
+</main>
+<footer>
+<div class="wrap footer-box">
+<div>
+<strong>情報Ⅰサポートツール</strong>
+
+</div>
+</div>
+</footer>
+<script>
+(() => {
+  const body = document.body;
+  const toggle = document.getElementById('themeModeToggle');
+  const wrapper = document.getElementById('themeToggle');
+  const label = wrapper?.querySelector('.theme-toggle-label');
+  const storageKey = 'joho-theme';
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let animationTimer;
+
+  const applyTheme = (theme, { animate = false } = {}) => {
+    const isDark = theme === 'dark';
+    if (toggle) toggle.checked = isDark;
+    body.setAttribute('data-theme', theme);
+    if (label) label.textContent = 'Theme';
+    if (wrapper) {
+      wrapper.setAttribute('title', isDark ? 'ライトテーマへ切り替え' : 'ダークテーマへ切り替え');
+      wrapper.setAttribute('aria-label', isDark ? '現在はダークテーマ。ライトテーマへ切り替え' : '現在はライトテーマ。ダークテーマへ切り替え');
+    }
+    if (!animate || prefersReducedMotion.matches) return;
+    body.classList.add('theme-switching');
+    window.clearTimeout(animationTimer);
+    animationTimer = window.setTimeout(() => {
+      body.classList.remove('theme-switching');
+    }, 420);
+  };
+
+  let saved = null;
+  try { saved = localStorage.getItem(storageKey); } catch (e) {}
+  applyTheme(saved === 'light' || saved === 'dark' ? saved : 'dark');
+
+  toggle?.addEventListener('change', () => {
+    const next = toggle.checked ? 'dark' : 'light';
+    applyTheme(next, { animate: true });
+    try { localStorage.setItem(storageKey, next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
